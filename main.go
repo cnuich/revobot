@@ -14,29 +14,27 @@ var (
 	Token string
 )
 
-var s *discordgo.Session
-
 func init() {
+
 	flag.StringVar(&Token, "t", "", "Bot Token")
 	flag.Parse()
 }
 
 func main() {
 	// Create a new Discord session using the provided bot token.
-	botSession, err := discordgo.New("Bot " + Token)
+	dg, err := discordgo.New("Bot " + Token)
 	if err != nil {
 		fmt.Println("error creating Discord session,", err)
 		return
 	}
 
 	// Register the messageCreate func as a callback for MessageCreate events.
-	botSession.AddHandler(messageCreate)
+	dg.AddHandler(messageCreate)
 
-	// In this example, we only care about receiving message events.
-	botSession.Identify.Intents = discordgo.IntentsGuildMessages
+	dg.Identify.Intents = discordgo.IntentsGuildMessages
 
 	// Open a websocket connection to Discord and begin listening.
-	err = botSession.Open()
+	err = dg.Open()
 	if err != nil {
 		fmt.Println("error opening connection,", err)
 		return
@@ -48,17 +46,16 @@ func main() {
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 	<-sc
 
-	// Cleanly close down the Discord session.
-	botSession.Close()
+	dg.Close()
 }
 
 func messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
-	//Ignore responding to ourself
+	// Ignore all messages created by the bot itself
 	if m.Author.ID == s.State.User.ID {
 		return
 	}
 
-	if m.Content == "hello" {
+	if m.Content == "test" {
 		s.ChannelMessageSend(m.ChannelID, "Hello World!")
 	}
 }
